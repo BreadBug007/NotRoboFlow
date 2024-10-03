@@ -1,0 +1,104 @@
+html,
+body {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.container-fluid {
+    height: 100vh;
+}
+
+.toast .btn-close {
+    width: 1rem;
+    height: 1rem;
+    padding: 0.25rem;
+}
+
+#loginForm {
+    display: flex;
+    flex-direction: column;
+    max-width: 300px;
+    margin: 50px auto;
+}
+
+/* Main container styling with left 75% and right 25% */
+#mainContainer {
+    display: flex;
+    height: 100vh;
+    /* Full screen height */
+}
+
+/* Speaker section adjustments (75% width) */
+#speakerSection {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 75%;
+    /* Left section takes 75% width */
+    margin-right: 20px;
+    /* Space between left and right sections */
+}
+
+/* Placeholder section styling (25% width) */
+#placeholderSection {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 25%;
+    /* Right section takes 25% width */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-width: 250px;
+}
+
+/* Predefined area for Audio */
+.audio-area {
+    height: 50%;
+    /* Fixed height for audio section */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Predefined area for Image (70% of the bottom half) */
+.image-area {
+    height: 100%;
+    /* Full height of the bottom half */
+}
+
+/* Predefined area for Bounding Boxes (30% of the bottom half) */
+.bounding-boxes-area {
+    height: 100%;
+    /* Full height of the bottom half */
+    position: relative;
+    border-left: 2px solid #e9ecef;
+    /* Optional: border for separation */
+}
+
+/* Flex properties for the bottom half */
+.d-flex {
+    display: flex;
+    flex-grow: 1;
+}
+
+/* Image Section */
+#imageSection img {
+    max-height: 100%;
+    /* Ensures image doesn't overflow */
+    object-fit: contain;
+    /* Keeps aspect ratio */
+}
+
+/* Bounding Box styles */
+#boundingBoxes div {
+    border: 2px solid red;
+    position: absolute;
+    background-color: rgba(255, 0, 0, 0.2);
+    /* Semi-transparent background */
+    box-sizing: border-box;
+}
