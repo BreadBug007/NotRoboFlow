@@ -6,8 +6,15 @@ import base64
 import os
 
 
+class AllowerSpeakerListSerializer(serializers.Serializer):
+    id = serializers.CharField(source="speaker.id")
+    speaker_id = serializers.CharField(source="speaker.speaker_id")
+
+    class Meta:
+        fields = ('id', 'speaker_id')
+
+
 class AllowedMediaListSerializer(serializers.ModelSerializer):
-    id = serializers.CharField(source='speaker.id')
     speaker_id = serializers.CharField(source='speaker.speaker_id')
 
     class Meta:
@@ -15,7 +22,7 @@ class AllowedMediaListSerializer(serializers.ModelSerializer):
         fields = ('id', 'speaker_id', 'image_file')
 
 
-class SpeakerDataListSerializer(serializers.ModelSerializer):
+class MediaDataRetrieveSerializer(serializers.ModelSerializer):
     audio_file = serializers.CharField(source='speaker.audio_file')
 
     class Meta:

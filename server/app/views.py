@@ -5,6 +5,18 @@ from . import models
 from . import serializers
 from .constants import Constants
 
+
+class AllowedSpeaker(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        allowed_speakers = models.AllowedSpeaker.objects.filter(
+            user=request.user
+        ).select_related('speaker')
+        serializer = serializers.AllowerSpeakerListSerializer(allowed_speakers, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class AllowedMedia(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -15,23 +27,27 @@ class AllowedMedia(APIView):
         allowed_media = models.Media.objects.filter(
             speaker__in=allowed_speakers
         )
-        annotated_media = models.Annotation.objects.filter(
-            media__speaker__in=allowed_speakers, is_annotated=True
-        ).values('media')
-        media_filter = request.query_params.get("media_filter")
-        if media_filter:
-            if media_filter == Constants.ANNOTATED.value:
+        # filters
+        speaker_id = request.query_params.get("speaker_id")
+        annotated = request.query_params.get("annotated")
+        if speaker_id:
+            allowed_media = allowed_media.filter(speaker=speaker_id)
+        if annotated:
+            annotated_media = models.Annotation.objects.filter(
+                media__speaker__in=allowed_speakers, is_annotated=True
+            ).values('media')
+            if annotated == Constants.ANNOTATED.value:
                 allowed_media = allowed_media.filter(id__in=annotated_media)
-            elif media_filter == Constants.NON_ANNOTATED.value:
+            elif annotated == Constants.NON_ANNOTATED.value:
                 allowed_media = allowed_media.exclude(id__in=annotated_media)
         serializer = serializers.AllowedMediaListSerializer(allowed_media, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class SpeakerData(APIView):
+class MediaData(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, speaker_id):
-        queryset = models.Media.objects.filter(speaker=speaker_id).get()
-        serializer = serializers.SpeakerDataListSerializer(queryset)
+    def get(self, request, media_id):
+        media_obj = models.Media.objects.filter(id=media_id).get()
+        serializer = serializers.MediaDataRetrieveSerializer(media_obj)
         return Response(serializer.data, status=status.HTTP_200_OK)
