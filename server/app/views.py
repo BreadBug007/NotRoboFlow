@@ -6,7 +6,7 @@ from . import serializers
 from .constants import Constants
 
 
-class AllowedSpeaker(APIView):
+class AllowedSpeakerView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -17,7 +17,7 @@ class AllowedSpeaker(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class AllowedMedia(APIView):
+class AllowedMediaView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -26,7 +26,7 @@ class AllowedMedia(APIView):
         ).values('speaker')
         allowed_media = models.Media.objects.filter(
             speaker__in=allowed_speakers
-        )
+        ).order_by('speaker__speaker_id')
         # filters
         speaker_id = request.query_params.get("speaker_id")
         annotated = request.query_params.get("annotated")
@@ -44,10 +44,19 @@ class AllowedMedia(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class MediaData(APIView):
+class MediaDataView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, media_id):
         media_obj = models.Media.objects.filter(id=media_id).get()
         serializer = serializers.MediaDataRetrieveSerializer(media_obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class VowelView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        queryset = models.Vowel.objects.all()
+        serializer = serializers.VowelListSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

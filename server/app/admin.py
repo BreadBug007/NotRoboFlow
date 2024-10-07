@@ -23,12 +23,13 @@ class AllowedSpeakerAdmin(admin.ModelAdmin):
 
 
 class VowelAdmin(admin.ModelAdmin):
-    list_display = ('id', 'category_id', 'vowel')
-    search_fields = ('category_id', 'vowel')
+    list_display = ('id', 'category_id', 'vowel', 'description')
+    search_fields = ('category_id', 'vowel', 'description')
+    ordering = ('category_id',)
 
 
 class AnnotationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'media', 'vowel', 'is_annotated')
+    list_display = ('id', 'media', 'annotation', 'is_annotated')
 
 
 admin.site.register(models.User, UserAdmin)

@@ -7,7 +7,12 @@
     <title>Audio and Image Upload</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 </head>
 
 <body>
@@ -28,23 +33,14 @@
     </div>
 
     <!-- Main Container: Audio, Image, Bounding Box, and Placeholder (Initially Hidden) -->
-    <div id="mainContainer" class="container-fluid d-flex" style="display: none;">
+    <div id="mainContainer" class="container-fluid d-none">
         <!-- Left Section: Audio, Image, and Bounding Box (75% width) -->
         <div id="speakerSection" class="flex-grow-1">
+            <!-- New bar with Select Speaker and Reset buttons -->
             <div class="d-flex align-items-center my-3">
-
-                <div class="me-2">
-                    <select id="filterDropdown" class="form-select custom-select">
-                        <option value="all" selected>All</option>
-                        <option value="annotated">Annotated</option>
-                        <option value="non-annotated">Non-Annotated</option>
-                    </select>
-                </div>
-
-                <select id="speakerDropdown" class="form-select custom-select me-2">
-                    <option value="" disabled selected>Select a speaker</option>
-                </select>
-                <button id="refreshBtn" class="btn btn-secondary">Refresh</button>
+                <button id="openSpeakerModalBtn" class="btn btn-secondary me-2" data-bs-toggle="modal"
+                    data-bs-target="#speakerModal">Select Media</button>
+                <button id="resetBtn" class="btn btn-danger">Reset</button>
             </div>
 
             <div id="dataDisplay" style="display: none;" class="d-flex flex-column" style="height: 100%;">
@@ -73,8 +69,158 @@
 
         <!-- Right Section: Placeholder (25% width) -->
         <div id="placeholderSection" class="ms-4 p-3 border" style="width: 25%;">
-            <h3>Placeholder Section</h3>
-            <p>This is placeholder content that can be replaced later.</p>
+            <div class="table-container">
+                <!-- Toggle Button for Monophthongs Table -->
+                <div class="toggle-bar" id="toggleMonophthongsTableBtn">Show/Hide Monophthongs Table</div>
+
+                <!-- Monophthongs Table -->
+                <table class="vowel-table" id="monophthongsTable">
+                    <tbody>
+                        <tr id="row1">
+                            <td id="cell1_1"><strong>i:</strong></td>
+                            <td id="cell1_2">me, see, need, be, leave</td>
+                            <td id="cell1_3"><strong>ɜ:</strong></td>
+                            <td id="cell1_4">earn, learn, turn, yearn, churn</td>
+                        </tr>
+                        <tr id="row2">
+                            <td id="cell2_1"><strong>I&nbsp;</strong></td>
+                            <td id="cell2_2">pit, sit, with, this, wink</td>
+                            <td id="cell2_3"><strong>ɔ:</strong></td>
+                            <td id="cell2_4">oar, or, floor, bore, chore</td>
+                        </tr>
+                        <tr id="row3">
+                            <td id="cell3_1"><strong>ʊ</strong></td>
+                            <td id="cell3_2">foot, cook, look, book, hook</td>
+                            <td id="cell3_3"><strong>æ</strong></td>
+                            <td id="cell3_4">map, cat, bad, pack, sand</td>
+                        </tr>
+                        <tr id="row4">
+                            <td id="cell4_1"><strong>u:</strong></td>
+                            <td id="cell4_2">to, new, you, shoe, cool</td>
+                            <td id="cell4_3"><strong>ʌ</strong></td>
+                            <td id="cell4_4">mud, bus, shut, but, up</td>
+                        </tr>
+                        <tr id="row5">
+                            <td id="cell5_1"><strong>e</strong></td>
+                            <td id="cell5_2">when, men, said, leg, hen, head</td>
+                            <td id="cell5_3"><strong>ɑ:</strong></td>
+                            <td id="cell5_4">palm, calm, cart, smart, start</td>
+                        </tr>
+                        <tr id="row6">
+                            <td id="cell6_1"><strong>ə</strong></td>
+                            <td id="cell6_2">letter, power, flower, tower, shower</td>
+                            <td id="cell6_3" colspan="2"></td> <!-- Colspan for empty space -->
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Toggle Button for Diphthongs Table -->
+                <div class="toggle-bar" id="toggleDiphthongsTableBtn">Show/Hide Diphthongs Table</div>
+
+                <!-- Diphthongs Table -->
+                <table class="vowel-table" id="diphthongsTable">
+                    <tbody>
+                        <tr id="row1">
+                            <td id="cell1_1"><strong>ɪə</strong></td>
+                            <td id="cell1_2">ear, cheer, year, deer, fear</td>
+                            <td id="cell1_3"><strong>əʊ</strong></td>
+                            <td id="cell1_4">go, bow, sew, so, flow</td>
+                        </tr>
+                        <tr id="row2">
+                            <td id="cell2_1"><strong>eɪ</strong></td>
+                            <td id="cell2_2">say, pray, day, way, stray</td>
+                            <td id="cell2_3"><strong>eə</strong></td>
+                            <td id="cell2_4">air, chair, rare, bare, there</td>
+                        </tr>
+                        <tr id="row3">
+                            <td id="cell3_1"><strong>ʊə</strong></td>
+                            <td id="cell3_2">tour, sure, cure</td>
+                            <td id="cell3_3"><strong>aɪ</strong></td>
+                            <td id="cell3_4">I, eye, pie, fight, fright</td>
+                        </tr>
+                        <tr id="row4">
+                            <td id="cell4_1"><strong>ɔɪ</strong></td>
+                            <td id="cell4_2">oil, coin, boy, voice, boil</td>
+                            <td id="cell4_3"><strong>aʊ</strong></td>
+                            <td id="cell4_4">owl, out, count, bow, cowl</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Speaker Selection -->
+    <div class="modal fade" id="speakerModal" tabindex="-1" aria-labelledby="speakerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="speakerModalLabel">Select Allowed Speaker</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Media Section -->
+                    <div class="media-section mt-4">
+                        <h6>Media</h6>
+                        <div class="d-flex align-items-center mb-3">
+                            <!-- Speaker ID Filter -->
+                            <!-- Speaker ID Filter -->
+                            <div class="dropdown me-2">
+                                <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                    id="speakerIdFilterButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Filter by Speaker ID
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="speakerIdFilterButton">
+                                    <li>
+                                        <a class="dropdown-item" href="#" data-value="">All Speakers</a>
+                                    </li>
+                                    <!-- Speaker IDs will be populated here dynamically -->
+                                    <div id="speakerIdOptions"></div> <!-- This should be <ul> to be proper -->
+                                </ul>
+                            </div>
+
+                            <!-- Annotated Filter -->
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                    id="annotatedFilterButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Filter by Annotated
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="annotatedFilterButton">
+                                    <li>
+                                        <a class="dropdown-item" href="#" data-value="">All</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#" data-value="annotated">Yes</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#" data-value="non-annotated">No</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <!-- Refresh Button -->
+                            <button id="refreshBtn" class="btn btn-secondary ms-2">Refresh</button>
+                        </div>
+
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">Speaker #</th>
+                                    <th class="text-center">Image File</th>
+                                    <th class="text-center">Annotated</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mediaTableBody">
+                                <!-- Rows will be populated here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Button Container -->
+                    <div class="text-center mt-3">
+                        <button id="confirmBtn" class="btn btn-primary">Confirm</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -83,9 +229,7 @@
         <div id="loginToast" class="toast align-items-center text-bg-success border-0" role="alert"
             aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
-                <div class="toast-body">
-                    Login successful! Welcome back.
-                </div>
+                <div class="toast-body">Login successful! Welcome back.</div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
                     aria-label="Close"></button>
             </div>
@@ -95,9 +239,7 @@
         <div id="loginErrorToast" class="toast align-items-center text-bg-danger border-0" role="alert"
             aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
-                <div class="toast-body">
-                    Error logging in. Please try again.
-                </div>
+                <div class="toast-body">Error logging in. Please try again.</div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
                     aria-label="Close"></button>
             </div>
@@ -106,6 +248,5 @@
 
     <script src="scripts.js"></script>
 </body>
-
 
 </html>

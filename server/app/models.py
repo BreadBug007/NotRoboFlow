@@ -56,11 +56,12 @@ class AllowedSpeaker(BaseModel):
 
 
 class Vowel(BaseModel):
-    category_id = models.CharField(max_length=10, null=True, blank=True)
+    category_id = models.IntegerField(max_length=10, null=True, blank=True)
     vowel = models.CharField(max_length=10, null=True, blank=True)
+    description = models.CharField(max_length=50, null=True, blank=True)
 
 
 class Annotation(BaseModel):
     media = models.ForeignKey(Media, on_delete=models.CASCADE)
-    vowel = models.ForeignKey(Vowel, on_delete=models.CASCADE)
+    annotation = models.JSONField(null=True, blank=True)
     is_annotated = models.BooleanField(default=False)

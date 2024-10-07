@@ -102,3 +102,177 @@ body {
     /* Semi-transparent background */
     box-sizing: border-box;
 }
+
+/* Optional: Custom width for modal */
+.modal-dialog {
+    max-width: 60vw;
+    /* Adjust to desired width (80% of viewport width) */
+}
+
+@media (min-width: 992px) {
+    .modal-lg {
+        max-width: 60vw;
+        /* Adjust this to make the modal wider */
+    }
+}
+
+/* Center align table columns */
+.table td,
+.table th {
+    text-align: center;
+}
+
+/* Make the table responsive */
+.modal-dialog {
+    max-width: 90%;
+    /* Adjust max-width as needed */
+}
+
+/* Distinct hover effect for table rows */
+.table tbody tr:hover {
+    background-color: #f5f5f5;
+    /* Light gray background on hover */
+    cursor: pointer;
+    /* Pointer cursor for better UX */
+}
+
+/* Distinct style for selected row */
+.table tbody tr.selected {
+    background-color: #d1e7dd;
+    /* Greenish background for selected row */
+    color: #0f5132;
+    /* Dark green text color */
+}
+
+.selected {
+    background-color: #007bff;
+    color: white;
+}
+
+/* Style for the toggle bar */
+.toggle-bar {
+    background-color: #007bff;
+    /* Use Bootstrap primary color or customize */
+    color: white;
+    /* Text color */
+    padding: 10px 15px;
+    /* Padding */
+    text-align: center;
+    /* Center text */
+    cursor: pointer;
+    /* Pointer cursor on hover */
+    position: relative;
+    /* Relative positioning */
+    width: 100%;
+    /* Fill parent width */
+    margin-bottom: 10px;
+    /* Add margin below the toggle bar */
+    z-index: 1000;
+    /* Ensure it's above other content */
+    transition: background-color 0.3s;
+    /* Smooth background transition */
+}
+
+/* Hover effect for the toggle bar */
+.toggle-bar:hover {
+    background-color: #0056b3;
+    /* Darker shade on hover */
+}
+
+/* Specific style for the vowel table */
+.vowel-table {
+    width: 100%;
+    /* Make the table full-width */
+    border-collapse: collapse;
+    /* Merge borders */
+    margin: 0;
+    /* Reset margin since the toggle bar provides space */
+    font-family: Arial, sans-serif;
+    /* Use a clean font */
+    font-size: 16px;
+    /* Reduce font size for the table */
+    line-height: 1.2;
+    /* Adjust line height for tighter spacing */
+    display: none;
+    /* Initially hide the table */
+}
+
+/* Style for table headers and cells */
+.vowel-table th,
+.vowel-table td {
+    border: 1px solid #ddd;
+    /* Light gray border */
+    padding: 8px;
+    /* Reduced padding for cells */
+    text-align: left;
+    /* Align text to the left */
+}
+
+/* Style for strong elements in the vowel table */
+.vowel-table strong {
+    color: #007bff;
+    /* Use Bootstrap primary color for strong text */
+}
+
+/* Alternate row background color for readability */
+.vowel-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+    /* Light gray background for even rows */
+}
+
+/* Hover effect for rows */
+.vowel-table tr:hover {
+    background-color: #e9ecef;
+    /* Slightly darker background on hover */
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 600px) {
+
+    .vowel-table td,
+    .vowel-table th {
+        font-size: 10px;
+        /* Further reduce font size for smaller screens */
+        padding: 6px;
+        /* Adjust padding for smaller screens */
+    }
+}
+
+/* Placeholder section styling (25% width) */
+#placeholderSection {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 25%;
+    /* Right section takes 25% width */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    /* Align items to the top */
+    align-items: center;
+    min-width: 250px;
+
+    /* Make the section fill the viewport height */
+    height: 100vh;
+    /* Fill the entire vertical viewport */
+    overflow-y: auto;
+    /* Enable vertical scrolling */
+}
+
+/* Style for the scrollbar (optional) */
+#placeholderSection::-webkit-scrollbar {
+    width: 8px;
+    /* Width of the scrollbar */
+}
+
+#placeholderSection::-webkit-scrollbar-thumb {
+    background-color: #888;
+    /* Color of the scrollbar thumb */
+    border-radius: 4px;
+    /* Round edges */
+}
+
+#placeholderSection::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+    /* Darker on hover */
+}

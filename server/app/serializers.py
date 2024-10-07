@@ -38,3 +38,10 @@ class MediaDataRetrieveSerializer(serializers.ModelSerializer):
             with open(file_path, "rb") as fp:
                 data[file_type] = base64.b64encode(fp.read())
         return data
+
+
+class VowelListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Vowel
+        fields = ('id', 'category_id', 'vowel', 'description')
