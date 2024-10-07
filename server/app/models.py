@@ -56,7 +56,7 @@ class AllowedSpeaker(BaseModel):
 
 
 class Vowel(BaseModel):
-    category_id = models.IntegerField(max_length=10, null=True, blank=True)
+    category_id = models.IntegerField(null=True, blank=True)
     vowel = models.CharField(max_length=10, null=True, blank=True)
     description = models.CharField(max_length=50, null=True, blank=True)
 

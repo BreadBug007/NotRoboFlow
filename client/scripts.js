@@ -1,3 +1,5 @@
+let waveform;
+
 // Handle "Enter" key press for login
 document.getElementById('loginForm').addEventListener('keydown', function (event) {
     if (event.key === 'Enter') {
@@ -55,14 +57,6 @@ function loginUser() {
 
 // Attach event to login button
 document.getElementById('loginBtn').addEventListener('click', loginUser);
-
-// Reset Button functionality
-document.getElementById('resetBtn').addEventListener('click', function () {
-    document.getElementById('speakerAudio').src = '';
-    document.getElementById('speakerImage').src = '';
-    document.getElementById('boundingBoxes').innerHTML = '';
-    document.getElementById('dataDisplay').style.display = 'none';
-});
 
 // Function to show error in a toast
 function showErrorToast(message) {
@@ -174,7 +168,6 @@ let selectedItemId = null;
 
 // Confirm button event listener
 document.getElementById('confirmBtn').addEventListener('click', () => {
-    console.log(selectedItemId);
     if (selectedItemId) {
         // Implement existing functionality to handle selected media ID
         console.log(`Selected Media ID: ${selectedItemId}`);
@@ -189,73 +182,14 @@ document.getElementById('confirmBtn').addEventListener('click', () => {
         })
             .then(response => response.json())
             .then(data => {
-                // Decode Base64 audio
-                const audioElement = document.getElementById('speakerAudio');
-                audioElement.src = `data:audio/mpeg;base64,${data.audio_file}`; // Adjust MIME type as needed
+
+                handleWaveformAudio(data);
 
                 // Decode Base64 image
                 const imageElement = document.getElementById('speakerImage');
                 imageElement.src = `data:image/jpeg;base64,${data.image_file}`; // Adjust MIME type as needed
 
-                // Decode Base64 text file containing bounding boxes
-                const boundingBoxesElement = document.getElementById('boundingBoxes');
-                boundingBoxesElement.innerHTML = ''; // Clear previous bounding boxes
-
-                // Decode Base64 text and process rows
-                const decodedText = atob(data.text_file); // Decode the Base64 text file
-                const rows = decodedText.trim().split('\n'); // Split by new line
-
-                if (rows.length > 0 && rows[0]) {
-                    // Fetch bounding box options (vowels) from API
-                    fetch('http://localhost:8000/api/vowels', {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem("jwtToken")}`,
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                        .then(response => response.json())
-                        .then(vowels => {
-                            // Iterate over each bounding box (row) and create dropdowns
-                            rows.forEach((row, index) => {
-                                const dropdown = document.createElement('select');
-                                dropdown.className = 'form-select';
-
-                                // Set an ID or data attribute for Select2 to identify the dropdown
-                                dropdown.setAttribute('id', `boundingBoxDropdown${index}`);
-
-                                const defaultOpt = document.createElement('option');
-                                defaultOpt.value = '';
-                                defaultOpt.textContent = 'Select a vowel';
-                                dropdown.appendChild(defaultOpt); // Add it as the first option
-
-                                // Populate dropdown options with vowels from API
-                                vowels.forEach(vowel => {
-                                    const opt = document.createElement('option');
-                                    opt.value = vowel.category_id; // Use category_id as the value
-                                    opt.textContent = vowel.vowel; // Use vowel as the text
-                                    dropdown.appendChild(opt);
-                                });
-
-                                const label = document.createElement('label');
-                                label.textContent = `Bounding Box ${index + 1}: `;
-                                boundingBoxesElement.appendChild(label);
-                                boundingBoxesElement.appendChild(dropdown);
-
-                                // Initialize Select2
-                                $(dropdown).select2({
-                                    placeholder: 'Select a vowel', // Placeholder for the dropdown
-                                    allowClear: true // Allow the user to clear the selection
-                                });
-                            });
-                        })
-                        .catch(error => {
-                            console.error('Error fetching vowels:', error);
-                            boundingBoxesElement.textContent = 'Error fetching vowels.';
-                        });
-                } else {
-                    boundingBoxesElement.textContent = 'No bounding boxes found';
-                }
+                handleBoundingBoxes(data);
 
                 // Show the data display section
                 document.getElementById('dataDisplay').style.display = 'block';
@@ -270,6 +204,150 @@ document.getElementById('confirmBtn').addEventListener('click', () => {
     }
 });
 
+function handleWaveformAudio(data) {
+    console.log(data)
+    // Decode Base64 audio
+    const audioBase64 = data.audio_file;
+    const audioBlob = new Blob([Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0))], { type: 'audio/mpeg' });
+    const audioUrl = URL.createObjectURL(audioBlob);
+
+    if (waveform) {
+        waveform.destroy();
+    }
+
+    // Initialize Plugins
+    const regions = WaveSurfer.Regions.create();
+
+    // Initialize WaveSurfer
+    waveform = WaveSurfer.create({
+        container: '#waveform',
+        waveColor: 'violet',
+        progressColor: 'purple',
+        barWidth: 2,
+        responsive: true,
+        autoCenter: false,
+        plugins: [
+            regions, // Enable the regions plugin
+        ]
+    });
+
+    // Load the audio
+    waveform.load(audioUrl);
+
+    // Add a region to highlight a portion of the audio
+    waveform.on('ready', () => {
+        regions.addRegion({
+            start: data['region_start'] - data['start_time'], // start time in seconds
+            end: data['region_end'] - data['start_time'], // end time in seconds
+            color: 'rgba(255, 0, 0, 0.5)', // color of the highlight
+            drag: false,
+            resize: false,
+        });
+        updateTiming();
+    });
+
+    waveform.on('audioprocess', updateTiming); // Update current time while playing
+
+    regions.on('region-clicked', (region, e) => {
+        e.stopPropagation() // prevent triggering a click on the waveform
+        region.play()
+        document.getElementById('playPauseBtn').textContent = 'Pause';
+    })
+
+    // Update button text when a region is played
+    regions.on('region-play', function () {
+        document.getElementById('playPauseBtn').textContent = 'Pause';
+    });
+
+    // Update button text when the audio stops
+    waveform.on('finish', function () {
+        waveform.pause(); // Stop the playback
+        document.getElementById('playPauseBtn').textContent = 'Play'; // Change button text to 'Play'
+    });
+}
+
+// Update the timing display
+function updateTiming() {
+    const currentTime = document.getElementById('currentTime');
+    const duration = document.getElementById('duration');
+
+    // Update current time
+    currentTime.textContent = formatTime(waveform.getCurrentTime());
+
+    // Update duration if the audio is loaded
+    if (waveform.getDuration() > 0) {
+        duration.textContent = formatTime(waveform.getDuration());
+    }
+}
+
+// Format time as mm:ss
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${minutes}:${secs < 10 ? '0' + secs : secs}`;
+}
+
+function handleBoundingBoxes(data) {
+    // Decode Base64 text file containing bounding boxes
+    const boundingBoxesElement = document.getElementById('boundingBoxes');
+    boundingBoxesElement.innerHTML = ''; // Clear previous bounding boxes
+
+    // Decode Base64 text and process rows
+    const decodedText = atob(data.text_file); // Decode the Base64 text file
+    const rows = decodedText.trim().split('\n'); // Split by new line
+
+    if (rows.length > 0 && rows[0]) {
+        // Fetch bounding box options (vowels) from API
+        fetch('http://localhost:8000/api/vowels', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem("jwtToken")}`,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(vowels => {
+                // Iterate over each bounding box (row) and create dropdowns
+                rows.forEach((row, index) => {
+                    const dropdown = document.createElement('select');
+                    dropdown.className = 'form-select';
+
+                    // Set an ID or data attribute for Select2 to identify the dropdown
+                    dropdown.setAttribute('id', `boundingBoxDropdown${index}`);
+
+                    const defaultOpt = document.createElement('option');
+                    defaultOpt.value = '';
+                    defaultOpt.textContent = 'Select a vowel';
+                    dropdown.appendChild(defaultOpt); // Add it as the first option
+
+                    // Populate dropdown options with vowels from API
+                    vowels.forEach(vowel => {
+                        const opt = document.createElement('option');
+                        opt.value = vowel.category_id; // Use category_id as the value
+                        opt.textContent = vowel.vowel; // Use vowel as the text
+                        dropdown.appendChild(opt);
+                    });
+
+                    const label = document.createElement('label');
+                    label.textContent = `Bounding Box ${index + 1}: `;
+                    boundingBoxesElement.appendChild(label);
+                    boundingBoxesElement.appendChild(dropdown);
+
+                    // Initialize Select2
+                    $(dropdown).select2({
+                        placeholder: 'Select a vowel', // Placeholder for the dropdown
+                        allowClear: true // Allow the user to clear the selection
+                    });
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching vowels:', error);
+                boundingBoxesElement.textContent = 'Error fetching vowels.';
+            });
+    } else {
+        boundingBoxesElement.textContent = 'No bounding boxes found';
+    }
+}
 
 // Function to fetch Speaker IDs for filtering
 function fetchSpeakerIds() {
@@ -372,6 +450,39 @@ function handleTokenExpired() {
     localStorage.removeItem('jwtToken'); // Clear the expired token
     window.location.reload(); // Optionally reload the page to show the login form
 }
+
+// Reset Button functionality
+document.getElementById('resetBtn').addEventListener('click', function () {
+    document.getElementById('waveform').innerHTML = '';
+    if (waveform) {
+        waveform.destroy();
+    }
+    document.getElementById('speakerImage').src = '';
+    document.getElementById('boundingBoxes').innerHTML = '';
+    document.getElementById('dataDisplay').style.display = 'none';
+    document.getElementById('currentTime').innerHTML = '0:00';
+    document.getElementById('duration').innerHTML = '0:00';
+});
+
+// Play and Stop functionality
+document.getElementById('playPauseBtn').addEventListener('click', function () {
+    if (waveform.isPlaying()) {
+        waveform.pause(); // Pause the audio
+        this.textContent = 'Play'; // Change button text to 'Play'
+    } else {
+        waveform.play(); // Play the audio
+        this.textContent = 'Pause'; // Change button text to 'Pause'
+    }
+});
+
+document.getElementById('stopBtn').addEventListener('click', () => {
+    if (waveform) {
+        waveform.stop(); // Stop playback
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        playPauseBtn.textContent = 'Play'; // Reset button text
+        document.getElementById('currentTime').innerHTML = '0:00';
+    }
+});
 
 // Toggle functionality for Monophthongs table
 document.getElementById('toggleMonophthongsTableBtn').addEventListener('click', function () {
