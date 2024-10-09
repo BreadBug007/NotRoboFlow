@@ -1,8 +1,10 @@
-from rest_framework import status, permissions
+from django.conf import settings
+from rest_framework import permissions, status
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from . import models
-from . import serializers
+
+from . import models, serializers
 from .constants import Constants
 
 
@@ -17,7 +19,7 @@ class AllowedSpeakerView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class AllowedMediaView(APIView):
+class AllowedMediaView(ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -40,8 +42,9 @@ class AllowedMediaView(APIView):
                 allowed_media = allowed_media.filter(id__in=annotated_media)
             elif annotated == Constants.NON_ANNOTATED.value:
                 allowed_media = allowed_media.exclude(id__in=annotated_media)
-        serializer = serializers.AllowedMediaListSerializer(allowed_media, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        queryset = self.paginate_queryset(allowed_media)
+        serializer = serializers.AllowedMediaListSerializer(queryset, many=True)
+        return self.get_paginated_response(serializer.data)
 
 
 class MediaDataView(APIView):
@@ -60,3 +63,13 @@ class VowelView(APIView):
         queryset = models.Vowel.objects.all()
         serializer = serializers.VowelListSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class AnnotationView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = serializers.AnnotationCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

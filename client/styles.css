@@ -22,14 +22,11 @@ body {
     margin: 50px auto;
 }
 
-/* Main container styling with left 75% and right 25% */
 #mainContainer {
     display: flex;
     height: 100vh;
-    /* Full screen height */
 }
 
-/* Speaker section adjustments (75% width) */
 #speakerSection {
     background-color: #f8f9fa;
     border: 1px solid #e9ecef;
@@ -37,18 +34,14 @@ body {
     padding: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 75%;
-    /* Left section takes 75% width */
     margin-right: 20px;
-    /* Space between left and right sections */
 }
 
-/* Placeholder section styling (25% width) */
 #placeholderSection {
     background-color: #ffffff;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 25%;
-    /* Right section takes 25% width */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -56,92 +49,67 @@ body {
     min-width: 250px;
 }
 
-/* Predefined area for Audio */
 .audio-area {
     height: 50%;
-    /* Fixed height for audio section */
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
 
-/* Predefined area for Image (70% of the bottom half) */
 .image-area {
     height: 100%;
-    /* Full height of the bottom half */
 }
 
-/* Predefined area for Bounding Boxes (30% of the bottom half) */
 .bounding-boxes-area {
     height: 100%;
-    /* Full height of the bottom half */
     position: relative;
     border-left: 2px solid #e9ecef;
-    /* Optional: border for separation */
 }
 
-/* Flex properties for the bottom half */
 .d-flex {
     display: flex;
     flex-grow: 1;
 }
 
-/* Image Section */
 #imageSection img {
     max-height: 100%;
-    /* Ensures image doesn't overflow */
     object-fit: contain;
-    /* Keeps aspect ratio */
 }
 
-/* Bounding Box styles */
 #boundingBoxes div {
     border: 2px solid red;
     position: absolute;
     background-color: rgba(255, 0, 0, 0.2);
-    /* Semi-transparent background */
     box-sizing: border-box;
 }
 
-/* Optional: Custom width for modal */
 .modal-dialog {
     max-width: 60vw;
-    /* Adjust to desired width (80% of viewport width) */
 }
 
 @media (min-width: 992px) {
     .modal-lg {
         max-width: 60vw;
-        /* Adjust this to make the modal wider */
     }
 }
 
-/* Center align table columns */
 .table td,
 .table th {
     text-align: center;
 }
 
-/* Make the table responsive */
 .modal-dialog {
     max-width: 90%;
-    /* Adjust max-width as needed */
 }
 
-/* Distinct hover effect for table rows */
 .table tbody tr:hover {
     background-color: #f5f5f5;
-    /* Light gray background on hover */
     cursor: pointer;
-    /* Pointer cursor for better UX */
 }
 
-/* Distinct style for selected row */
 .table tbody tr.selected {
     background-color: #d1e7dd;
-    /* Greenish background for selected row */
     color: #0f5132;
-    /* Dark green text color */
 }
 
 .selected {
@@ -149,191 +117,147 @@ body {
     color: white;
 }
 
-/* Style for the toggle bar */
 .toggle-bar {
     background-color: #007bff;
-    /* Use Bootstrap primary color or customize */
     color: white;
-    /* Text color */
     padding: 10px 15px;
-    /* Padding */
     text-align: center;
-    /* Center text */
     cursor: pointer;
-    /* Pointer cursor on hover */
     position: relative;
-    /* Relative positioning */
     width: 100%;
-    /* Fill parent width */
     margin-bottom: 10px;
-    /* Add margin below the toggle bar */
     z-index: 1;
-    /* Ensure it's above other content */
     transition: background-color 0.3s;
-    /* Smooth background transition */
 }
 
-/* Hover effect for the toggle bar */
 .toggle-bar:hover {
     background-color: #0056b3;
-    /* Darker shade on hover */
 }
 
-/* Specific style for the vowel table */
 .vowel-table {
     width: 100%;
-    /* Make the table full-width */
     border-collapse: collapse;
-    /* Merge borders */
     margin: 0;
-    /* Reset margin since the toggle bar provides space */
     font-family: Arial, sans-serif;
-    /* Use a clean font */
     font-size: 16px;
-    /* Reduce font size for the table */
     line-height: 1.2;
-    /* Adjust line height for tighter spacing */
     display: none;
-    /* Initially hide the table */
 }
 
-/* Style for table headers and cells */
 .vowel-table th,
 .vowel-table td {
     border: 1px solid #ddd;
-    /* Light gray border */
     padding: 8px;
-    /* Reduced padding for cells */
     text-align: left;
-    /* Align text to the left */
 }
 
-/* Style for strong elements in the vowel table */
 .vowel-table strong {
     color: #007bff;
-    /* Use Bootstrap primary color for strong text */
 }
 
-/* Alternate row background color for readability */
 .vowel-table tr:nth-child(even) {
     background-color: #f9f9f9;
-    /* Light gray background for even rows */
 }
 
-/* Hover effect for rows */
 .vowel-table tr:hover {
     background-color: #e9ecef;
-    /* Slightly darker background on hover */
 }
 
-/* Responsive design for smaller screens */
 @media (max-width: 600px) {
 
     .vowel-table td,
     .vowel-table th {
         font-size: 10px;
-        /* Further reduce font size for smaller screens */
         padding: 6px;
-        /* Adjust padding for smaller screens */
     }
 }
 
-/* Placeholder section styling (25% width) */
 #placeholderSection {
     background-color: #ffffff;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 25%;
-    /* Right section takes 25% width */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    /* Align items to the top */
     align-items: center;
     min-width: 250px;
 
-    /* Make the section fill the viewport height */
     height: 100vh;
-    /* Fill the entire vertical viewport */
     overflow-y: auto;
-    /* Enable vertical scrolling */
 }
 
-/* Style for the scrollbar (optional) */
 #placeholderSection::-webkit-scrollbar {
     width: 8px;
-    /* Width of the scrollbar */
 }
 
 #placeholderSection::-webkit-scrollbar-thumb {
     background-color: #888;
-    /* Color of the scrollbar thumb */
     border-radius: 4px;
-    /* Round edges */
 }
 
 #placeholderSection::-webkit-scrollbar-thumb:hover {
     background-color: #555;
-    /* Darker on hover */
 }
 
 .header-container {
     display: flex;
-    /* Use Flexbox for horizontal alignment */
     align-items: center;
-    /* Align items vertically centered */
     justify-content: space-between;
-    /* Space between the header and buttons */
 }
 
 .audio-buttons {
     display: flex;
-    /* Use flexbox to arrange buttons side by side */
     gap: 10px;
-    /* Add some space between buttons */
     margin-top: 10px;
-    /* Add some margin above the buttons */
     justify-content: flex-end;
-    /* Center the buttons */
 }
 
 .audio-buttons .btn {
     display: inline-block;
-    /* Change display to inline-block */
     padding: 10px 20px;
-    /* Adjust button size */
     font-size: 16px;
-    /* Font size */
     cursor: pointer;
-    /* Pointer cursor on hover */
     border: none;
-    /* Remove default border */
     border-radius: 5px;
-    /* Rounded corners */
 }
 
 .audio-buttons .btn-primary {
     background-color: #007bff;
-    /* Blue background */
     color: white;
-    /* White text */
 }
 
 .audio-buttons .btn-danger {
     background-color: #dc3545;
-    /* Red background */
     color: white;
-    /* White text */
 }
 
 .audio-buttons .btn:hover {
     opacity: 0.9;
-    /* Slightly fade on hover */
 }
 
 .timing-display {
     margin: 10px 0;
     font-size: 14px;
     text-align: center;
-    /* Center the timing display */
+}
+
+.pagination-controls button {
+    background-color: #6200ea;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    margin: 0 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.pagination-controls button:hover {
+    background-color: #3700b3;
+}
+
+.pagination-controls button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }

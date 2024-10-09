@@ -79,12 +79,30 @@ function isTokenExpired(token) {
 }
 
 // Function to fetch media data and populate the table
-async function fetchMediaData() {
+async function fetchMediaData(page = 1, pageSize = 10) {
     const token = localStorage.getItem("jwtToken");
+
+    // Update the hidden input with the current page
+    document.getElementById('currentPage').value = page;
 
     if (token && !isTokenExpired(token)) {
         try {
-            const response = await fetch('http://localhost:8000/api/allowed-media', {
+            // Build query parameters for filtering
+            const speakerId = Array.from(document.querySelectorAll('#speakerIdOptions .dropdown-item.active')).map(item => item.getAttribute('data-value')).join('');
+            const annotated = Array.from(document.querySelectorAll('#annotatedFilterButton + .dropdown-menu .dropdown-item.active')).map(item => item.getAttribute('data-value')).join('');
+
+            let queryParams = `?page=${page}&page_size=${pageSize}`;
+
+            if (speakerId) {
+                queryParams += `&speaker_id=${speakerId}`;
+            }
+
+            if (annotated) {
+                queryParams += `&annotated=${annotated}`;
+            }
+
+            // Fetch media data from the API
+            const response = await fetch(`http://localhost:8000/api/allowed-media${queryParams}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -97,16 +115,24 @@ async function fetchMediaData() {
             }
 
             const data = await response.json();
-            populateMediaTable(data); // Populate the table with the fetched data
+            populateMediaTable(data.results); // Populate the table with the fetched results
+            renderPagination(data.count, page, pageSize); // Render pagination controls
 
         } catch (error) {
             console.error('Error fetching media data:', error);
-            handleTokenExpired();
+            if (token && isTokenExpired(token)) {
+                handleTokenExpired(); // Handle token expiration
+            } else {
+                showToast('errorToast', 'An error occurred while fetching media data.'); // Show toast with error message
+            }
         }
     } else {
         handleTokenExpired();
     }
 }
+
+// Initial selected item ID
+let selectedItemId = null;
 
 // Function to populate the media table
 function populateMediaTable(mediaItems) {
@@ -131,7 +157,7 @@ function populateMediaTable(mediaItems) {
 
         // Annotated
         const annotatedCell = document.createElement('td');
-        annotatedCell.textContent = item.annotated ? 'Yes' : 'No'; // Assuming annotated is a boolean
+        annotatedCell.textContent = item.is_annotated ? 'Yes' : 'No'; // Assuming annotated is a boolean
         annotatedCell.style.textAlign = 'center'; // Center align
         row.appendChild(annotatedCell);
 
@@ -141,6 +167,9 @@ function populateMediaTable(mediaItems) {
         hiddenInput.value = item.id; // Assuming this is the item ID
         row.appendChild(hiddenInput);
 
+        if (selectedItemId && selectedItemId == item.id) {
+            row.classList.add('selected')
+        }
         // Row selection functionality
         row.style.cursor = 'pointer'; // Indicate row is selectable
         row.addEventListener('click', () => {
@@ -158,13 +187,39 @@ function populateMediaTable(mediaItems) {
     });
 }
 
-// Handle modal opening and data fetching
-document.getElementById('speakerModal').addEventListener('show.bs.modal', () => {
-    fetchMediaData(); // Fetch media data when modal opens
-});
+// Function to render pagination controls
+function renderPagination(totalCount, currentPage, pageSize) {
+    const paginationContainer = document.getElementById('paginationContainer');
 
-// Initial selected item ID
-let selectedItemId = null;
+    // Remove only existing buttons and page info
+    const existingButtons = paginationContainer.querySelectorAll('button');
+    existingButtons.forEach(button => button.remove());
+
+    // Create or update the page information display
+    const pageInfo = document.getElementById('pageInfo');
+    pageInfo.textContent = `Page ${currentPage} of ${Math.ceil(totalCount / pageSize)}`; // Update text
+
+    // Previous button
+    const prevButtonContainer = document.getElementById('prevButtonContainer');
+    prevButtonContainer.innerHTML = ''; // Clear previous button container
+    if (currentPage > 1) {
+        const prevButton = document.createElement('button');
+        prevButton.innerHTML = '&lt;'; // HTML entity for left arrow
+        prevButton.onclick = () => fetchMediaData(currentPage - 1, pageSize); // Fetch previous page
+        prevButtonContainer.appendChild(prevButton); // Append to previous button section
+    }
+
+    // Next button
+    const nextButtonContainer = document.getElementById('nextButtonContainer');
+    nextButtonContainer.innerHTML = ''; // Clear next button container
+    if (currentPage < Math.ceil(totalCount / pageSize)) {
+        const nextButton = document.createElement('button');
+        nextButton.innerHTML = '&gt;'; // HTML entity for right arrow
+        nextButton.onclick = () => fetchMediaData(currentPage + 1, pageSize); // Fetch next page
+        nextButtonContainer.appendChild(nextButton); // Append to next button section
+    }
+}
+
 
 // Confirm button event listener
 document.getElementById('confirmBtn').addEventListener('click', () => {
@@ -205,7 +260,6 @@ document.getElementById('confirmBtn').addEventListener('click', () => {
 });
 
 function handleWaveformAudio(data) {
-    console.log(data)
     // Decode Base64 audio
     const audioBase64 = data.audio_file;
     const audioBlob = new Blob([Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0))], { type: 'audio/mpeg' });
@@ -406,37 +460,11 @@ annotatedFilterItems.forEach(item => {
     });
 });
 
-// Refresh Media Data function
-function refreshMediaData() {
-    const speakerId = Array.from(document.querySelectorAll('#speakerIdOptions .dropdown-item.active')).map(item => item.getAttribute('data-value')).join('');
-    const annotated = Array.from(document.querySelectorAll('#annotatedFilterButton + .dropdown-menu .dropdown-item.active')).map(item => item.getAttribute('data-value')).join('');
-
-    let queryParams = '';
-
-    if (speakerId) {
-        queryParams += `?speaker_id=${speakerId}`;
-    }
-
-    if (annotated) {
-        queryParams += queryParams ? `&annotated=${annotated}` : `?annotated=${annotated}`;
-    }
-
-    fetch(`http://localhost:8000/api/allowed-media${queryParams}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem("jwtToken")}`
-        },
-    })
-        .then(response => response.json())
-        .then(data => {
-            populateMediaTable(data);
-        })
-        .catch(error => console.error('Error fetching filtered media data:', error));
-}
-
 // Event listener for refresh button
-document.getElementById('refreshBtn').addEventListener('click', refreshMediaData);
+document.getElementById('refreshBtn').addEventListener('click', () => {
+    const currentPage = parseInt(document.getElementById('currentPage').value); // Get the current page number
+    fetchMediaData(currentPage, 10); // Call fetchMediaData with the current page and page size
+});
 
 // Fetch data when the modal is opened
 document.getElementById('speakerModal').addEventListener('show.bs.modal', () => {
@@ -506,7 +534,52 @@ document.getElementById('toggleDiphthongsTableBtn').addEventListener('click', fu
     }
 });
 
+// Function to show toast messages
+function showToast(toastId) {
+    const toastElement = new bootstrap.Toast(document.getElementById(toastId));
+    toastElement.show();
+}
 
+$('#saveBoundingBoxesBtn').click(function () {
+    if (!selectedItemId) {
+        alert("Please select a media item before saving.");
+        return;
+    }
+
+    // Collect all selected bounding box IDs
+    let selectedBoundingBoxes = [];
+    $('#boundingBoxes select').each(function () {
+        let selectedId = $(this).val();
+        if (selectedId) {
+            selectedBoundingBoxes.push(parseInt(selectedId));
+        }
+    });
+
+    // Prepare the payload
+    let payload = {
+        "media_id": selectedItemId,
+        "bounding_boxes": selectedBoundingBoxes
+    };
+
+    // Make POST request using the selected media_id
+    $.ajax({
+        url: `http://localhost:8000/api/annotation`,  // Using the dynamic media_id
+        type: 'POST',
+        contentType: 'application/json',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem("jwtToken")}`
+        },
+        data: JSON.stringify(payload),
+        success: function (response) {
+            console.log("Bounding boxes saved successfully", response);
+            showToast('successToast'); // Show success toast
+        },
+        error: function (xhr, status, error) {
+            console.error("Error saving bounding boxes", status, error);
+            showToast('errorToast'); // Show error toast
+        }
+    });
+});
 
 // Check if the user is already logged in (JWT token exists)
 window.onload = function () {
